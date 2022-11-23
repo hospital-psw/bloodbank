@@ -4,7 +4,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Random;
 
 @RestController
@@ -32,4 +36,14 @@ public class Controller {
 	public ResponseEntity<Boolean> checkBloodTypeAmmount(@PathVariable String bloodType,@PathVariable double amount) {
 		return ResponseEntity.ok(false);
 	}
+
+	@PostMapping("/sendPdf")
+		public ResponseEntity sendPdf(@RequestBody MultipartFile pdf) throws Exception{
+			System.out.println("USAO SAM ODJE");
+		System.out.println(pdf.getOriginalFilename());
+		String filePath = "..\\PDF\\"+pdf.getOriginalFilename();
+		Files.copy(pdf.getInputStream(), Paths.get(filePath), StandardCopyOption.REPLACE_EXISTING);
+			return ResponseEntity.ok("As");
+		}
+
 }
