@@ -1,15 +1,21 @@
 package com.example.dummybank.demo;
 
+import com.rabbitmq.client.ConnectionFactory;
+import model.MonthlyTransfer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Random;
+import java.util.concurrent.TimeoutException;
 
 @RestController
 @RequestMapping("/api")
@@ -45,5 +51,24 @@ public class Controller {
 		Files.copy(pdf.getInputStream(), Paths.get(filePath), StandardCopyOption.REPLACE_EXISTING);
 			return ResponseEntity.ok("As");
 		}
+	@PostMapping(value="/monthlyTransfer",consumes = MediaType.APPLICATION_JSON_VALUE)
+	public String monthlyTransfer(@RequestBody MonthlyTransfer mt) throws IOException, TimeoutException {
+		System.out.println("Monhtly Transfer Service worked.");
 
+		var factory = new ConnectionFactory();
+		factory.setHost("localhost");
+
+		var connection = factory.newConnection();
+		var channel = connection.createChannel();
+
+		channel.queueDeclare("monthly", false, false, false, null);
+
+		var message = "A_PLUS:"+mt.APlus+"-"+"A_MINUS:"+mt.AMinus+"-"+"B_PLUS:"+mt.BPlus+"-"+"B_MINUS:"+mt.BMinus+"-"+"AB_PLUS:"+mt.ABPlus+"-"+"AB_MINUS:"+mt.ABMinus+"-"+"O_PLUS:"+mt.OPlus+"-"+"O_MINUS:"+mt.OMinus;
+
+		byte[] body = message.getBytes(StandardCharsets.UTF_8);
+
+		channel.basicPublish("", "monthly", null, body);
+
+		return "BLA";
+	}
 }
